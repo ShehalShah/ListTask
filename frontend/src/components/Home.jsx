@@ -9,6 +9,7 @@ const Home = () => {
   const [editedTitle, setEditedTitle] = useState('');
   const [editedDescription, setEditedDescription] = useState('');
   const [editedCompleted, setEditedCompleted] = useState(false);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     fetchTasks();
@@ -57,11 +58,21 @@ const Home = () => {
 
   const handleUpdate = async () => {
     try {
+      // Perform form validation
+      if (editedTitle.trim() === '') {
+        // Display an error or prevent form submission
+        console.error('Title is required');
+        setError(true)
+        return;
+      }
+      setError(false)
+  
+      // Continue with task update or creation
       const requestMethod = editedTask.id ? 'PUT' : 'POST';
       const url = editedTask.id
         ? `http://localhost:4000/api/tasks/${editedTask.id}`
         : 'http://localhost:4000/api/tasks';
-
+  
       await fetch(url, {
         method: requestMethod,
         headers: {
@@ -73,13 +84,14 @@ const Home = () => {
           completed: editedCompleted ? 1 : 0,
         }),
       });
-
-      fetchTasks();
+  
+      fetchTasks(); // Fetch tasks again after update to refresh the list
       setEditModalOpen(false);
     } catch (error) {
       console.error('Error updating task:', error);
     }
   };
+  
 
   return (
     <div className="bg-gray-900 min-h-screen flex flex-col">
@@ -112,6 +124,7 @@ const Home = () => {
             className="mb-4 w-full my-4"
             variant="outlined"
           />
+          {error && <h3 className='text-xl font-bold text-red-600 mx-auto my-4'>Title is required</h3>}
           <TextField
             label="Description"
             value={editedDescription}
